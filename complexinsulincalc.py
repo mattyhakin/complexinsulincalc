@@ -4,72 +4,52 @@
 #correctional dose - if required based upon the current blood sugar readings
 #and if any insulin was taken in the last 90 minutes
 
-#Blood Sugar range
-bs_min = 4
-bs_max = 7
+BLOOD_SUGAR_MIN = 4
+BLOOD_SUGAR_MIN_CORRECTION = -1
+BLOOD_SUGAR_MAX = 7
+BLOOD_SUGAR_MAX_CORRECTION = 1
 
-#Blood Sugar Correctional units
-bs_mincorrect = -1
-bs_maxcorrect = 1
+DOSAGE_RATIO = {
+'breakfast': 2,
+'lunch': 1.5,
+'dinner': 1.5,
+'snack': 1.5,
+}
 
-#Ratio's for each type of meal/snack
-breakfast = 2
-lunch = 1.5
-dinner = 1.5
-snack = 1.5
+def main():
+prompt = f"What type of dose is it ({'/'.join(DOSAGE_RATIO.keys())}): "
 
-#Asking for input of the meal time and setting the ratio
-dose_type = input("What Type of Dose is it: ")
+while (dose_type := input(prompt).strip().lower()) not in DOSAGE_RATIO:
+print("Try again")
 
-if dose_type == "Breakfast" or dose_type =="breakfast":
-    ratio = breakfast
+ratio = DOSAGE_RATIO[dose_type]
 
-elif dose_type == "Lunch" or dose_type == "lunch":
-    ratio = lunch
+carbs = float(input("How Many Carbs are you eating: "))
 
-elif dose_type == "Dinner" or dose_type == "dinner":
-    ratio = dinner
+dose = ratio * carbs / 10
 
-elif dose_type == "Snack" or dose_type == "snack":
-    ratio = snack
+ninety_mins = input("Have you had a dose of insulin in the last 90 minutes?").strip().lower()
+if ninety_mins == "yes":
+print(f"You need {dose} units of insulin")
+raise SystemExit
 
-else:
-    print("Try again")
+blood_sugar_level = float(input("What is your current blood sugar reading? "))
 
-#Asking for input of how manu carbs are being dosed for
-carbs = input("How Many Carbs are you eating: ")
+multiplier = 0
+limit = 0
 
-#Working out the dose by multiplying the ratio and carbs then diving by 10 
-#to get the insulin dose
-dose = float(ratio) * float(carbs) / 10
+if BLOOD_SUGAR_MAX < blood_sugar_level:
+    multiplier = BLOOD_SUGAR_MAX_CORRECTION
+    limit = BLOOD_SUGAR_MAX
+elif blood_sugar_level < BLOOD_SUGAR_MIN:
+    multiplier = BLOOD_SUGAR_MIN_CORRECT
+    limit = BLOOD_SUGAR_MIN
+    
+cordiff = blood_sugar_level - limit
+correction = cordiff * multiplier
+total_dose = round(dose + correction)
 
-#Asking for input of Blood Sugars to work out any correctional dose
-bloodsugars = input("What is your current blood sugar reading? ")
+print(f"You need {total_dose} units of insulin")
 
-#If Blood Suagrs are great then the max value adds correctional dose to
-#the calculation
-if float(bloodsugars) > bs_max:
-    cordiff = float(bloodsugars) - float(bs_max)
-    totalcorrect = float(cordiff) * float(bs_maxcorrect)
-    totaldose = float(dose) + float(totalcorrect)
-
-# If Blood Sugars are less than the min removes units of insulin from the dose
-elif float(bloodsugars) < bs_min:
-    cordiff = float(bs_min) - float(bloodsugars)
-    totalcorrect = float(cordiff) * float(bs_mincorrect)
-    totaldose = float(dose) + float(totalcorrect)
-
-#If its between the max and min, it just uses the dose calulated eatlier
-else:
-    totaldose = dose
-
-#Sets the dose to a round number
-totaldose = round(totaldose)
-
-#Prints the dose required based on the inputs
-print("You Need " + str(totaldose) + " Units of Insulin")
-
-
-
-
-
+if __name__ == '__main__':
+main()
